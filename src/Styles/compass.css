@@ -1,0 +1,83 @@
+.compass {
+    width: 200px;
+    height: 200px;
+    border: 3px solid white;
+    border-radius: 50%;
+    position: relative;
+}
+
+.arrow {
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 18px solid white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: bottom;
+    transform: translateX(-50%) translateY(-50%);
+}
+.arrow::before{
+    width: 5px;
+    height: 15px;
+    content: "";
+    background-color: white;
+}
+
+.direction {
+    position: absolute;
+    font-size: 15px;
+    font-weight: bold;
+
+}
+
+.N {
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+
+
+.E {
+    top: 50%;
+    left: calc(100% - 15px);
+    transform: translateY(-50%);
+}
+
+
+
+.S {
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+
+.W {
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+}
+
+
+
+@media (max-width: 768px) {
+
+    .compass {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .compass {
+        width: 130px;
+        height: 130px;
+    }
+
+    .direction {
+        font-size: 13px;
+        font-weight: bold;
+    }
+}
