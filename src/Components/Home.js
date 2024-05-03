@@ -1,5 +1,5 @@
 import '../Styles/home.css'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import sun from '../Assets/sunny2.jpg'
 import rain from '../Assets/rain.jpg'
 import mist from '../Assets/mist.jpg'
@@ -18,6 +18,9 @@ export default function Home() {
     const [location, setLocation] = useState({ latitude: Math.random() * 80, longitude: Math.random() * 50 })
     const [autocompleteResults, setAutocompleteResults] = useState([]);
     const [show, setShow] = useState(false);
+    const inputRef = useRef(null)
+    const modalRef = useRef(null);
+    const [clearBtn, setClearBtn] = useState(false)
 
     const fetchWeatherData = async () => {
         setIsLoading(true);
@@ -103,6 +106,8 @@ export default function Home() {
         const value = e.target.value;
         setInputValue(value);
 
+        if (value.length >= 1) { setClearBtn(true) } else { setClearBtn(false) }
+
         const url = `https://weatherapi-com.p.rapidapi.com/search.json?q=${inputValue}`;
         const options = {
             method: 'GET',
@@ -138,6 +143,13 @@ export default function Home() {
             latitude: lat, longitude: lon
         });
     }
+    const handleSearchBtn = () => {
+        setShow(!show);
+        setTimeout(() => {
+            if (!show) { inputRef.current.focus(); }
+        }, 150);
+    }
+
 
     if (error) {
         return <div>Error: {error.message}</div>;
@@ -149,25 +161,44 @@ export default function Home() {
 
 
                 <div className='main'>
-                    {show && <div className="searchBtn">
-                        <input value={inputValue}
-                            onChange={handleInputChange} placeholder='Search City, State, Country or region name' type="text" />
-                        <div className="line"></div>
-                        <div className="searchedResults">
-                            {autocompleteResults && autocompleteResults.length > 0 && (
-                                <div className='search'>
-                                    {autocompleteResults.map((result, index) => (
-                                        <div onClick={() => { handleSelect(result.lat, result.lon) }} className='items' key={index}>{result.name}, {result.region}, {result.country}</div>
-                                    ))}
+                    {show &&
+                        <div className="modal-container">
+                            <div className="modal" onClick={() => { setShow(!show) }}>
+                            </div>
+                            <div ref={modalRef} className="searchBtn">
+                                <div className="input-container">
+                                    <input value={inputValue}
+                                        onChange={handleInputChange} ref={inputRef} placeholder='Search City, State, Country...' type="text" />
+
+                                    {clearBtn && <i class="fas fa-plus" onClick={() => {
+                                        setInputValue(""); inputRef.value = ""; setClearBtn(false); setTimeout(() => {
+                                            inputRef.current.focus();
+                                        }, 150);
+                                    }}></i>}
                                 </div>
-                            )}
-                        </div>
-                    </div>}
+                                <div className="line"></div>
+                                <div className="searchedResults">
+                                    {autocompleteResults && autocompleteResults.length > 0 ?
+                                        (
+                                            <div className='search'>
+                                                {autocompleteResults.map((result, index) => (
+                                                    <div onClick={() => { handleSelect(result.lat, result.lon) }} className='items' key={index}>{result.name}, {result.region}, {result.country}</div>
+                                                ))}
+                                            </div>
+                                        )
+                                        : <div className="note">Search locations,    you'll see results here.</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>}
+
+
                     <img src={`${background}`} alt="" id='image' className='image' />
+
                     <div className="container">
                         <div className="blur-box1">
                             {isLoading ? <img id='gif' className='gif' src={"https://i.gifer.com/VAyR.gif"} alt="GIF" /> : <div className="txt2">
-                                {weatherData.location.name} <span onClick={() => { setShow(!show) }}><i className="fa-regular fa-magnifying-glass-location fa-search"></i></span>
+                                {weatherData.location.name} <span onClick={handleSearchBtn}><i className="fa-regular fa-magnifying-glass-location fa-search"></i></span>
                             </div>}
                             <div className="txt1">
                                 {Math.floor(weatherData.current.temp_c)}°
@@ -195,9 +226,9 @@ export default function Home() {
                             {weatherData.forecast.forecastday[0].hour.map((hour, index) => (
                                 <div className='forecast-container' key={index}>
                                     <div className="data-container">
-                                        <div className="time">{hour.time.split(' ')[1]}</div>
-                                        <div className="temp">{Math.floor(hour.temp_c)}°</div>
-                                        <div className="cond"> {hour.condition.text}</div>
+                                        <div className="time data-items">{hour.time.split(' ')[1]}</div>
+                                        <div className="temp data-items">{Math.floor(hour.temp_c)}°</div>
+                                        <div className="cond data-items"> {hour.condition.text}</div>
                                     </div>
                                 </div>
                             ))}
@@ -211,9 +242,9 @@ export default function Home() {
                             {weatherData.forecast.forecastday[1].hour.map((hour, index) => (
                                 <div className='forecast-container' key={index}>
                                     <div className="data-container">
-                                        <div className="time">{hour.time.split(' ')[1]}</div>
-                                        <div className="temp">{Math.floor(hour.temp_c)}°</div>
-                                        <div className="cond"> {hour.condition.text}</div>
+                                        <div className="time data-items">{hour.time.split(' ')[1]}</div>
+                                        <div className="temp data-items">{Math.floor(hour.temp_c)}°</div>
+                                        <div className="cond data-items"> {hour.condition.text}</div>
                                     </div>
                                 </div>
                             ))}
