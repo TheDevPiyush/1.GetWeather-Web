@@ -6,24 +6,27 @@ import mist from '../Assets/mist.jpg'
 import cloud from '../Assets/cloud.jpg'
 import thunder from '../Assets/thunder.jpg'
 import snow from '../Assets/snow.jpg'
+import defaultPic from '../Assets/default.png'
 import Compass from './Compass';
 export default function Home() {
     const [weatherData, setWeatherData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
     const [error, setError] = useState(null);
-    const [count, setCount] = useState(0)
     const [background, setBackgraound] = useState('');
     const [condition, setCondition] = useState('');
     const [inputValue, setInputValue] = useState('');
-    const [location, setLocation] = useState({ latitude: Math.random() * 80, longitude: Math.random() * 50 })
+    const [location, setLocation] = useState({ latitude: 0, longitude: 0 })
     const [autocompleteResults, setAutocompleteResults] = useState([]);
     const [show, setShow] = useState(false);
     const inputRef = useRef(null)
     const modalRef = useRef(null);
     const [clearBtn, setClearBtn] = useState(false)
+    const [saveModal, setsaveModal] = useState(false)
 
     const fetchWeatherData = async () => {
         setIsLoading(true);
+
         const url = `https://weatherapi-com.p.rapidapi.com/forecast.json?q=${location.latitude}%2C${location.longitude}&days=3`;
         const options = {
             method: 'GET',
@@ -32,8 +35,6 @@ export default function Home() {
                 'X-RapidAPI-Host': 'weatherapi-com.p.rapidapi.com'
             }
         };
-        setCount(count + 1)
-        console.log(count)
 
         try {
             const response = await fetch(url, options);
@@ -50,21 +51,18 @@ export default function Home() {
 
     const changeBackground = () => {
         const lowercaseCondition = condition.toLowerCase();
-        console.log(lowercaseCondition)
 
         if (
             lowercaseCondition.includes("clear") ||
             lowercaseCondition.includes("sunny") ||
             lowercaseCondition.includes("fair")
         ) {
-            console.log("It's a clear day.");
             setBackgraound(sun)
         } else if (
             lowercaseCondition.includes("rain") ||
             lowercaseCondition.includes("showers") ||
             lowercaseCondition.includes("drizzle")
         ) {
-            console.log("It's raining.");
             setBackgraound(rain)
         } else if (
             lowercaseCondition.includes("cloudy") ||
@@ -72,7 +70,6 @@ export default function Home() {
             lowercaseCondition.includes("partly cloudy") ||
             lowercaseCondition.includes("mostly cloudy")
         ) {
-            console.log("It's cloudy.");
             setBackgraound(cloud)
         } else if (
             lowercaseCondition.includes("fog") ||
@@ -80,34 +77,32 @@ export default function Home() {
             lowercaseCondition.includes("haze") ||
             lowercaseCondition.includes("rainy")
         ) {
-            console.log("It's foggy.");
             setBackgraound(mist)
         } else if (
             lowercaseCondition.includes("thunderstorm") ||
             lowercaseCondition.includes("storm") ||
             lowercaseCondition.includes("thundery")
         ) {
-            console.log("There's a thunderstorm.");
             setBackgraound(thunder)
         } else if (
             lowercaseCondition.includes("snow") ||
             lowercaseCondition.includes("blizzard")
         ) {
-            console.log("It's snowing.");
             setBackgraound(snow)
         } else {
-            console.log("Unknown weather condition.");
-            setBackgraound(cloud)
-
+            setBackgraound(defaultPic)
         }
     }
 
     const handleInputChange = async (e) => {
-        const value = e.target.value;
+        const value = e.target.value
         setInputValue(value);
+        value.length >= 1 ? setClearBtn(true) : setClearBtn(false)
 
-        if (value.length >= 1) { setClearBtn(true) } else { setClearBtn(false) }
+    }
 
+    const fetchSuggestions = async () => {
+        setIsLoadingSuggestions(true)
         const url = `https://weatherapi-com.p.rapidapi.com/search.json?q=${inputValue}`;
         const options = {
             method: 'GET',
@@ -121,21 +116,43 @@ export default function Home() {
             const response = await fetch(url, options);
             const result = await response.json();
             setAutocompleteResults(result)
-            console.log(result);
+            setIsLoadingSuggestions(false)
+
         } catch (error) {
             console.error(error);
         }
     }
 
     useEffect(() => {
-        fetchWeatherData();
-    }, []);
+        const delayDebounce = setTimeout(() => {
+            fetchSuggestions();
+        }, 1500);
 
-    useEffect(() => { changeBackground() }, [weatherData])
+        return () => clearTimeout(delayDebounce);
+    }, [inputValue])
+
+    useEffect(() => { changeBackground() },
+        [weatherData])
+    useEffect(() => {
+        changeBackground()
+    }, [])
 
     useEffect(() => {
-        fetchWeatherData();
+        const savedLat = localStorage.getItem("lat");
+        const savedLon = localStorage.getItem("lon");
+
+        if (savedLat && savedLon) {
+            setLocation({ latitude: parseFloat(savedLat), longitude: parseFloat(savedLon) });
+        } else {
+            setLocation({ latitude: Math.random() * 80, longitude: Math.random() * 50 });
+        }
+    }, []);
+    useEffect(() => {
+        if (location.latitude !== 0 || location.longitude !== 0) {
+            fetchWeatherData();
+        }
     }, [location]);
+
 
     const handleSelect = (lat, lon) => {
         setShow(false)
@@ -150,9 +167,28 @@ export default function Home() {
         }, 150);
     }
 
+    const handleSavelocation = (data) => {
+        if (data === "yes") {
+            localStorage.setItem("lat", location.latitude)
+            localStorage.setItem("lon", location.longitude)
+            setsaveModal(false)
+        }
+        else {
+            setsaveModal(false)
+        }
+    }
+
 
     if (error) {
-        return <div>Error: {error.message}</div>;
+        return <div className='error'>
+            <div className="text">
+                <i class="fa-sharp fa-regular fa-bug"></i> <br />
+                Oops! Ran into some bugs. Please refresh.
+            </div>
+            <div className="msg">
+                It's not you. It's us. <i class="fa-light fa-face-frown-slight"></i>
+            </div>
+        </div>;
     }
 
     return (
@@ -170,11 +206,17 @@ export default function Home() {
                                     <input value={inputValue}
                                         onChange={handleInputChange} ref={inputRef} placeholder='Search City, State, Country...' type="text" />
 
-                                    {clearBtn && <i class="fas fa-plus" onClick={() => {
-                                        setInputValue(""); inputRef.value = ""; setClearBtn(false); setTimeout(() => {
-                                            inputRef.current.focus();
-                                        }, 150);
-                                    }}></i>}
+                                    {!isLoadingSuggestions ? <div className="clear">
+                                        {clearBtn && <i class="fas fa-plus" onClick={() => {
+                                            setInputValue(""); inputRef.value = ""; setClearBtn(false); setTimeout(() => {
+                                                inputRef.current.focus();
+                                            }, 150);
+                                        }}></i>}
+                                    </div>
+                                        :
+                                        <div className="load-suggestion">
+                                            <img id='gif' className='gif' src={"https://i.gifer.com/VAyR.gif"} alt="GIF" />
+                                        </div>}
                                 </div>
                                 <div className="line"></div>
                                 <div className="searchedResults">
@@ -192,12 +234,23 @@ export default function Home() {
                             </div>
                         </div>}
 
+                    {saveModal && <div className="saveModal" onClick={() => { setsaveModal(false) }}>
+                        <div className="askContainer">
+                            Do you want to pin <span id='modal-name'> {weatherData.location.name} </span> as your default location?
+                            <div className="modal-btns">
+                                <div className="noBtn btns" onClick={() => { handleSavelocation("no") }}>No</div>
+                                <div className="middleBorder"></div>
+                                <div className="yesbtn btns" onClick={() => { handleSavelocation("yes") }}>Yes</div>
+                            </div>
+                        </div>
+                    </div>}
 
                     <img src={`${background}`} alt="" id='image' className='image' />
 
                     <div className="container">
                         <div className="blur-box1">
                             {isLoading ? <img id='gif' className='gif' src={"https://i.gifer.com/VAyR.gif"} alt="GIF" /> : <div className="txt2">
+                                <i class="fa-sharp fa-regular fa-location-pin-lock" onClick={() => { setsaveModal(true) }}></i>
                                 {weatherData.location.name} <span onClick={handleSearchBtn}><i className="fa-regular fa-magnifying-glass-location fa-search"></i></span>
                             </div>}
                             <div className="txt1">

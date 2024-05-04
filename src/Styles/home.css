@@ -72,7 +72,21 @@ body {
 
 .txt2 {
     font-size: 1.5rem;
+    position: relative;
     font-weight: 600;
+}
+
+.fa-location-pin-lock {
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    rotate: -10deg;
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+.fa-location-pin-lock:active {
+    font-weight: bolder;
 }
 
 .txt3 {
@@ -254,7 +268,7 @@ body {
     z-index: 100;
     height: 100%;
     width: 100%;
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(5px);
 
 
 }
@@ -293,6 +307,16 @@ input {
     font-weight: normal;
     color: rgba(255, 255, 255, 0.743);
     cursor: pointer;
+}
+
+.load-suggestion {
+    position: absolute;
+    right: 20px;
+}
+
+.load-suggestion>.gif {
+    height: 27px;
+    width: 27px;
 }
 
 .fa-plus:active {
@@ -361,4 +385,83 @@ input::placeholder {
     color: rgba(255, 255, 255, 0.465);
     font-weight: normal;
     font-size: small;
+}
+
+.clear {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+}
+
+.saveModal {
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    background-color: transparent;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    flex-direction: column;
+}
+
+.askContainer {
+    font-size: 1.1em;
+    margin: 10px;
+    backdrop-filter: blur(20px);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 1.2em;
+    border-radius: 20px;
+}
+#modal-name{
+    font-weight: bolder;
+}
+.modal-btns{
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+.middleBorder{
+    border-left: 1px solid lightgrey;
+    width: 2px;
+    height: 30px;
+}
+.btns{
+    width: 40%;
+    padding: 10px;
+    height: 100%;
+    cursor: pointer;
+    border-radius: 8px;
+}
+.btns:active{
+    background-color: rgba(0, 0, 0, 0.29);
+}
+.error{
+    width: 100svw;
+    height: 100svh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    font-weight: bold;
+    background-color: rgb(29, 26, 26);
+    color: white;
+
+}
+.msg{
+    font-size: small;
+    margin: 15px;
+    color: grey;
+}
+.fa-bug{
+    margin: 15px;
+
+    font-size: xx-large;
 }
