@@ -31,7 +31,7 @@ export default function Home() {
         const options = {
             method: 'GET',
             headers: {
-                'X-RapidAPI-Key': '72d949d974msh3127b927519e7d0p1bfb7djsn6c36e0cda251',
+                'X-RapidAPI-Key': 'YOUR_API_KEY',
                 'X-RapidAPI-Host': 'weatherapi-com.p.rapidapi.com'
             }
         };
